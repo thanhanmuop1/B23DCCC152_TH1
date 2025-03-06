@@ -133,6 +133,11 @@ export default [
 				name: 'Danh Mục Khối Kiến Thức',
 				component: './ExamBank/DanhMucKKT/listOfKnowledge',
 			},
+			{
+				path: '/exam-bank/question',
+				name: 'Câu Hỏi',
+				component: './ExamBank/CauHoi/question',
+			},
 		],
 	},
 
