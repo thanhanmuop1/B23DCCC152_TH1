@@ -144,10 +144,10 @@ export default [
 				component: './ExamBank/Questions',
 			},
 			{
-				path: '/exam-bank/exam-structure',
-				name: 'Cấu Trúc Đề Thi',
-				component: './ExamBank/CauTrucDeThi/examStructure',
-			},
+				path: '/exam-bank/templates',
+				name: 'Quản lý cấu trúc đề thi',
+				component: './ExamBank/ExamTemplates',
+			  }
 		],
 	},
 
