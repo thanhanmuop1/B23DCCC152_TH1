@@ -7,7 +7,7 @@ import {
   deleteQuestion,
   getQuestionById,
 } from '@/services/ExamBank/CauHoi/question';
-import type { Question, QuestionRequest } from '@/models/question';
+import type { Question, QuestionRequest } from '@/models/ExamBank/question';
 
 export default function useQuestion() {
   const [loading, setLoading] = useState(false);

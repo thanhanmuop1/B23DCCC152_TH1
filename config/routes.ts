@@ -134,6 +134,11 @@ export default [
 				component: './ExamBank/DanhMucKKT/listOfKnowledge',
 			},
 			{
+				path: '/exam-bank/subjects',
+				name: 'Môn Học',
+				component: './ExamBank/MonHoc/subjects',
+			},
+			{
 				path: '/exam-bank/questions',
 				name: 'Câu Hỏi',
 				component: './ExamBank/Questions',

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Select } from 'antd';
-import type { Question, QuestionRequest } from '@/models/question';
+import type { Question, QuestionRequest } from '@/models/ExamBank/question';
 
 const { TextArea } = Input;
 const { Option } = Select;

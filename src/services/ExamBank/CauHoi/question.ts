@@ -1,5 +1,5 @@
 import { request } from 'umi';
-import type { Question, QuestionRequest, ApiResponse, QuestionListResponse } from '@/models/question';
+import type { Question, QuestionRequest, ApiResponse, QuestionListResponse } from '@/models/ExamBank/question';
 
 const BASE_URL = 'http://localhost:3000/api/questions';
 

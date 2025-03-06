@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Button, Table, Space, Modal, Tag, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import type { Question } from '@/models/question';
+import type { Question } from '@/models/ExamBank/question';
 import useQuestion from '@/hooks/useQuestion';
 import QuestionForm from './components/QuestionForm';
 
