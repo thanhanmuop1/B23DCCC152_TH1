@@ -13,10 +13,15 @@ const PORT = 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
+// Import routes
+const subjectRoutes = require('./routes/subject');
+
 // Routes
 app.get('/', (req, res) => {
     res.send('Welcome to the Express.js backend!');
 });
+
+app.use('/api/subjects', subjectRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
