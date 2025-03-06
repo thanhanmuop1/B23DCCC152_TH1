@@ -134,9 +134,9 @@ export default [
 				component: './ExamBank/DanhMucKKT/listOfKnowledge',
 			},
 			{
-				path: '/exam-bank/question',
+				path: '/exam-bank/questions',
 				name: 'Câu Hỏi',
-				component: './ExamBank/CauHoi/questions',
+				component: './ExamBank/Questions',
 			},
 		],
 	},
