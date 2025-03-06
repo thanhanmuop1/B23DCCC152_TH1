@@ -19,6 +19,7 @@ const subjectRoutes = require('./routes/subject');
 const listOfKnowledgeRoutes = require('./routes/listOfKnowledge');
 const examTemplateStructureRoutes = require('./routes/examTemplateStructureRoutes');
 
+
 // Routes
 app.get('/', (req, res) => {
     res.send('Welcome to the Express.js backend!');
