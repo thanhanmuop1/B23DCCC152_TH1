@@ -5,15 +5,65 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { Question } from '@/models/ExamBank/question';
 import useQuestion from '@/hooks/useQuestion';
 import QuestionForm from './components/QuestionForm';
+import SearchForm from './components/SearchForm';
+import { searchService, SearchParams } from '@/services/ExamBank/search';
 
 const QuestionManagement: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const { loading, questions, fetchQuestions, addQuestion, editQuestion, removeQuestion } = useQuestion();
+  const { loading: crudLoading, questions: initialQuestions, fetchQuestions, addQuestion, editQuestion, removeQuestion } = useQuestion();
+  
+  // Search states
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Question[]>([]);
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
   useEffect(() => {
     fetchQuestions();
   }, [fetchQuestions]);
+
+  // Handle search
+  const handleSearch = async (values: SearchParams) => {
+    const hasFilters = values.subjectId || values.difficultyLevel || values.knowledgeCategoryId;
+    
+    if (!hasFilters) {
+      setIsSearchActive(false);
+      return;
+    }
+    
+    setSearchLoading(true);
+    setIsSearchActive(true);
+    
+    try {
+      const response = await searchService.search(values);
+      
+      if (response.data.success) {
+        setSearchResults(response.data.data || []);
+        
+        if (response.data.data.length === 0) {
+          message.info('Không tìm thấy câu hỏi nào phù hợp với điều kiện tìm kiếm');
+        } else {
+          message.success(`Tìm thấy ${response.data.count} câu hỏi`);
+        }
+      } else {
+        message.error('Lỗi khi tìm kiếm câu hỏi');
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      message.error('Lỗi khi tìm kiếm câu hỏi');
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Reset search
+  const handleResetSearch = () => {
+    setIsSearchActive(false);
+    setSearchResults([]);
+    fetchQuestions();
+  };
 
   const handleAdd = () => {
     setEditingQuestion(null);
@@ -36,6 +86,13 @@ const QuestionManagement: React.FC = () => {
         const success = await removeQuestion(id);
         if (success) {
           message.success('Xóa câu hỏi thành công');
+          if (isSearchActive) {
+            // Refresh search results
+            setIsSearchActive(false);
+            fetchQuestions();
+          } else {
+            fetchQuestions();
+          }
         }
       },
     });
@@ -52,6 +109,13 @@ const QuestionManagement: React.FC = () => {
     if (success) {
       setIsModalVisible(false);
       setEditingQuestion(null);
+      if (isSearchActive) {
+        // Refresh search results
+        setIsSearchActive(false);
+        fetchQuestions();
+      } else {
+        fetchQuestions();
+      }
     }
   };
 
@@ -90,7 +154,7 @@ const QuestionManagement: React.FC = () => {
       width: 200,
     },
     {
-      title: 'Danh mục',
+      title: 'Khối kiến thức',
       dataIndex: 'ten_danh_muc',
       key: 'ten_danh_muc',
       width: 200,
@@ -120,10 +184,25 @@ const QuestionManagement: React.FC = () => {
     },
   ];
 
+  // Determine which data to display
+  const displayData = isSearchActive ? searchResults : initialQuestions;
+  const isLoading = isSearchActive ? searchLoading : crudLoading;
+
   return (
-    <PageContainer>
+    <PageContainer
+      title="Quản lý câu hỏi"
+      subTitle="Tìm kiếm và quản lý câu hỏi trong ngân hàng đề thi"
+    >
       <div style={{ backgroundColor: '#fff', padding: 24 }}>
-        <div style={{ marginBottom: 16 }}>
+        {/* Search Form */}
+        <SearchForm
+          loading={searchLoading}
+          onSearch={handleSearch}
+          onReset={handleResetSearch}
+        />
+
+        {/* Action Buttons */}
+        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -131,20 +210,33 @@ const QuestionManagement: React.FC = () => {
           >
             Thêm câu hỏi
           </Button>
+          
+          {isSearchActive && searchResults.length > 0 && (
+            <div>
+              <Tag color="blue">Kết quả tìm kiếm: {searchResults.length} câu hỏi</Tag>
+            </div>
+          )}
         </div>
 
+        {/* Questions Table */}
         <Table
           columns={columns}
-          dataSource={questions}
+          dataSource={displayData}
           rowKey="id"
-          loading={loading}
+          loading={isLoading}
           pagination={{
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `Tổng số ${total} câu hỏi`,
           }}
+          locale={{
+            emptyText: isSearchActive 
+              ? 'Không tìm thấy câu hỏi nào phù hợp với điều kiện tìm kiếm' 
+              : 'Chưa có câu hỏi nào'
+          }}
         />
 
+        {/* Question Form Modal */}
         <QuestionForm
           visible={isModalVisible}
           onCancel={() => {

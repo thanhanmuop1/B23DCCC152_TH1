@@ -10,6 +10,7 @@ const examTemplateRoutes = require('./routes/examTemplateStructureRoutes');
 const examRoutes = require('./routes/examRoutes');
 const subjectRoutes = require('./routes/subject');
 const listOfKnowledgeRoutes = require('./routes/listOfKnowledge');
+const searchRoutes = require('./routes/searchRoutes');
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/listOfKnowledge', listOfKnowledgeRoutes);
 app.use('/api/questions', questionRoutes);
+app.use('/api/search', searchRoutes);
 app.use('/api/exam-templates', examTemplateRoutes);
 app.use('/api/exams', examRoutes);
 
