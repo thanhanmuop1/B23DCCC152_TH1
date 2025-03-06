@@ -5,4 +5,5 @@ export default {
 	'app.copyright.produced': 'RIPT',
 	...menu,
 	...pages,
+	'menu.rockPaperScissors': 'Oẳn Tù Tì',
 };

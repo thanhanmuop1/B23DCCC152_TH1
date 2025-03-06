@@ -1,4 +1,7 @@
-﻿export default [
+﻿import component from "@/locales/en-US/component";
+import path from "path";
+
+export default [
 	{
 		path: '/user',
 		layout: false,
@@ -112,6 +115,12 @@
 				component: './LearningProgress/Statistics',
 			},
 		],
+	},
+
+	{
+		path: '/oantuti',
+		name: 'Oản tù tì',
+		component: './RockPaperScissors'
 	},
 
 	{

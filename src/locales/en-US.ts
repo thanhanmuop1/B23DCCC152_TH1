@@ -22,4 +22,5 @@ export default {
 	...pwa,
 	...component,
 	...pages,
+	'menu.rockPaperScissors': 'Rock Paper Scissors',
 };
