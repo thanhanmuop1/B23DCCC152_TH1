@@ -15,6 +15,7 @@ app.use(bodyParser.json());
 
 // Import routes
 const subjectRoutes = require('./routes/subject');
+const listOfKnowledgeRoutes = require('./routes/ListOfKnowledge');
 
 // Routes
 app.get('/', (req, res) => {
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/subjects', subjectRoutes);
+app.use('/api/listOfKnowledge', listOfKnowledgeRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
