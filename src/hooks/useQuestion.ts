@@ -6,7 +6,7 @@ import {
   updateQuestion,
   deleteQuestion,
   getQuestionById,
-} from '@/services/question';
+} from '@/services/ExamBank/CauHoi/question';
 import type { Question, QuestionRequest } from '@/models/question';
 
 export default function useQuestion() {
