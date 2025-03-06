@@ -53,6 +53,38 @@ class Question {
       const [rows] = await db.query(query);
       return rows;
   }
+
+  static async update(id, questionData) {
+    const { noi_dung, muc_do, mon_hoc_id, danh_muc_id } = questionData;
+    
+    const query = `
+      UPDATE CauHoi 
+      SET noi_dung = ?, 
+          muc_do = ?, 
+          mon_hoc_id = ?, 
+          danh_muc_id = ?
+      WHERE id = ?
+    `;
+    
+    const [result] = await db.query(query, [noi_dung, muc_do, mon_hoc_id, danh_muc_id, id]);
+    
+    if (result.affectedRows === 0) {
+      throw new Error('Không tìm thấy câu hỏi để cập nhật');
+    }
+    
+    return this.getById(id);
+  }
+
+  static async delete(id) {
+    const query = 'DELETE FROM CauHoi WHERE id = ?';
+    const [result] = await db.query(query, [id]);
+    
+    if (result.affectedRows === 0) {
+      throw new Error('Không tìm thấy câu hỏi để xóa');
+    }
+    
+    return true;
+  }
 }
 
 module.exports = Question; 

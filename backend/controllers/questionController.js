@@ -1,4 +1,4 @@
-const Question = require('../models/Question');
+const Question = require('../models/question');
 
 // Controller for creating a new question
 exports.createQuestion = async (req, res) => {
@@ -64,6 +64,90 @@ exports.getAllQuestions = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Đã xảy ra lỗi khi lấy danh sách câu hỏi',
+      error: error.message
+    });
+  }
+};
+
+// Controller for updating a question
+exports.updateQuestion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { noi_dung, muc_do, mon_hoc_id, danh_muc_id } = req.body;
+
+    // Validate required fields
+    if (!noi_dung || !muc_do || !mon_hoc_id || !danh_muc_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp đầy đủ thông tin câu hỏi'
+      });
+    }
+
+    // Validate muc_do (difficulty level)
+    const validDifficulties = ['Dễ', 'Trung bình', 'Khó', 'Rất khó'];
+    if (!validDifficulties.includes(muc_do)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mức độ không hợp lệ. Mức độ phải là một trong: Dễ, Trung bình, Khó, Rất khó'
+      });
+    }
+
+    const updatedQuestion = await Question.update(id, {
+      noi_dung,
+      muc_do,
+      mon_hoc_id,
+      danh_muc_id
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Cập nhật câu hỏi thành công',
+      data: updatedQuestion
+    });
+
+  } catch (error) {
+    console.error('Error updating question:', error);
+    
+    if (error.message === 'Không tìm thấy câu hỏi để cập nhật') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi cập nhật câu hỏi',
+      error: error.message
+    });
+  }
+};
+
+// Controller for deleting a question
+exports.deleteQuestion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    await Question.delete(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Xóa câu hỏi thành công'
+    });
+
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    
+    if (error.message === 'Không tìm thấy câu hỏi để xóa') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi xóa câu hỏi',
       error: error.message
     });
   }

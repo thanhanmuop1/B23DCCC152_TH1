@@ -3,7 +3,7 @@ const db = require('../configs/database');
 class ListOfKnowledge {
     // Lấy danh sách tất cả danh mục khối kiến thức
     static async getAllListOfKnowledge() {
-        const [rows] = await db.query('SELECT * FROM DanhMucKhoiKienThuc');
+        const [rows] = await db.query('SELECT * FROM DanhMucKhoiKienThuc ');
         return rows;
     }
 
