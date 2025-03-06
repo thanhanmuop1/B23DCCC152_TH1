@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 // Import routes
 const subjectRoutes = require('./routes/subject');
-const listOfKnowledgeRoutes = require('./routes/ListOfKnowledge');
+const listOfKnowledgeRoutes = require('./routes/listOfKnowledge');
 
 // Routes
 app.get('/', (req, res) => {

@@ -124,6 +124,19 @@ export default [
 	},
 
 	{
+		path: '/exam-bank',
+		name: 'ExamBank',
+		icon: 'BookOutlined',
+		routes: [
+			{
+				path: '/exam-bank/list-of-knowledge',
+				name: 'List Of Knowledge',
+				component: './ExamBank/DanhMucKKT/listOfKnowledge',
+			},
+		],
+	},
+
+	{
 		path: '/403',
 		component: './exception/403/403Page',
 		layout: false,
