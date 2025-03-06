@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Button, Table, Space, Modal, message } from 'antd';
+import { Button, Table, Space, Modal, message, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ExamTemplate } from '@/models/examTemplate';
-import useExamTemplate from '@/hooks/useExamTemplate';
+import useExamTemplate from '@/hooks/ExamBank/useExamTemplate';
 import ExamTemplateForm from './components/ExamTemplateForm';
 
 const ExamTemplateManagement: React.FC = () => {
@@ -55,48 +55,48 @@ const ExamTemplateManagement: React.FC = () => {
     }
   };
 
+  const renderStructureDetails = (record: ExamTemplate) => {
+    return record.chi_tiet.map(detail => {
+      const value = record.loai_cau_truc === 'so_luong' 
+        ? `${detail.so_luong} câu` 
+        : `${detail.phan_tram}%`;
+      return (
+        <div key={detail.muc_do}>
+          <Tag color={
+            detail.muc_do === 'Dễ' ? 'green' :
+            detail.muc_do === 'Trung bình' ? 'blue' :
+            detail.muc_do === 'Khó' ? 'orange' : 'red'
+          }>
+            {detail.muc_do}: {value}
+          </Tag>
+        </div>
+      );
+    });
+  };
+
   const columns = [
     {
       title: 'Tên cấu trúc',
       dataIndex: 'ten_cau_truc',
       key: 'ten_cau_truc',
-      width: '30%',
+      width: '25%',
     },
     {
-      title: 'Số câu dễ',
-      key: 'de',
+      title: 'Loại cấu trúc',
+      dataIndex: 'loai_cau_truc',
+      key: 'loai_cau_truc',
       width: '15%',
-      render: (record: ExamTemplate) => {
-        const detail = record.chi_tiet.find(d => d.muc_do === 'Dễ');
-        return detail ? detail.so_luong : 0;
-      },
+      render: (type: string) => (
+        <Tag color={type === 'so_luong' ? 'blue' : 'purple'}>
+          {type === 'so_luong' ? 'Số lượng' : 'Phần trăm'}
+        </Tag>
+      ),
     },
     {
-      title: 'Số câu trung bình',
-      key: 'trung_binh',
-      width: '15%',
-      render: (record: ExamTemplate) => {
-        const detail = record.chi_tiet.find(d => d.muc_do === 'Trung bình');
-        return detail ? detail.so_luong : 0;
-      },
-    },
-    {
-      title: 'Số câu khó',
-      key: 'kho',
-      width: '15%',
-      render: (record: ExamTemplate) => {
-        const detail = record.chi_tiet.find(d => d.muc_do === 'Khó');
-        return detail ? detail.so_luong : 0;
-      },
-    },
-    {
-      title: 'Số câu rất khó',
-      key: 'rat_kho',
-      width: '15%',
-      render: (record: ExamTemplate) => {
-        const detail = record.chi_tiet.find(d => d.muc_do === 'Rất khó');
-        return detail ? detail.so_luong : 0;
-      },
+      title: 'Chi tiết cấu trúc',
+      key: 'chi_tiet',
+      width: '40%',
+      render: (_, record: ExamTemplate) => renderStructureDetails(record),
     },
     {
       title: 'Thao tác',

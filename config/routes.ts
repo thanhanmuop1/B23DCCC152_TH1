@@ -147,7 +147,23 @@ export default [
 				path: '/exam-bank/templates',
 				name: 'Quản lý cấu trúc đề thi',
 				component: './ExamBank/ExamTemplates',
-			  }
+			},
+			{
+				path: '/exam-bank/exams',
+				name: 'Quản lý đề thi',
+				routes: [
+					{
+						path: '/exam-bank/exams',
+						component: './ExamBank/Exams',
+						hideChildrenInMenu: true,
+					},
+					{
+						path: '/exam-bank/exams/:id',
+						component: './ExamBank/Exams/detail',
+						hideInMenu: true,
+					},
+				],
+			}
 		],
 	},
 

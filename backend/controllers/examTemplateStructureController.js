@@ -22,13 +22,21 @@ exports.getAllTemplates = async (req, res) => {
 // Tạo cấu trúc đề thi mẫu mới
 exports.createTemplate = async (req, res) => {
   try {
-    const { ten_cau_truc, chi_tiet } = req.body;
+    const { ten_cau_truc, loai_cau_truc, chi_tiet } = req.body;
 
     // Validate required fields
-    if (!ten_cau_truc || !chi_tiet || !Array.isArray(chi_tiet) || chi_tiet.length === 0) {
+    if (!ten_cau_truc || !loai_cau_truc || !chi_tiet || !Array.isArray(chi_tiet) || chi_tiet.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Vui lòng cung cấp tên cấu trúc và chi tiết cấu trúc'
+        message: 'Vui lòng cung cấp đầy đủ thông tin cấu trúc đề thi'
+      });
+    }
+
+    // Validate loai_cau_truc
+    if (!['so_luong', 'phan_tram'].includes(loai_cau_truc)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Loại cấu trúc không hợp lệ'
       });
     }
 
@@ -41,16 +49,47 @@ exports.createTemplate = async (req, res) => {
           message: 'Mức độ không hợp lệ'
         });
       }
-      if (!detail.so_luong || detail.so_luong <= 0) {
+
+      if (loai_cau_truc === 'phan_tram') {
+        if (!detail.phan_tram || detail.phan_tram <= 0 || detail.phan_tram > 100) {
+          return res.status(400).json({
+            success: false,
+            message: 'Phần trăm phải lớn hơn 0 và nhỏ hơn hoặc bằng 100'
+          });
+        }
+      } else {
+        if (!detail.so_luong || detail.so_luong <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: 'Số lượng câu hỏi phải lớn hơn 0'
+          });
+        }
+      }
+    }
+
+    // Kiểm tra trùng lặp mức độ
+    const difficulties = chi_tiet.map(item => item.muc_do);
+    if (new Set(difficulties).size !== difficulties.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Không được trùng lặp mức độ trong cấu trúc đề thi'
+      });
+    }
+
+    // Kiểm tra tổng phần trăm nếu là loại phần trăm
+    if (loai_cau_truc === 'phan_tram') {
+      const totalPercentage = chi_tiet.reduce((sum, item) => sum + item.phan_tram, 0);
+      if (totalPercentage !== 100) {
         return res.status(400).json({
           success: false,
-          message: 'Số lượng câu hỏi phải lớn hơn 0'
+          message: `Tổng phần trăm phải bằng 100%, hiện tại là ${totalPercentage}%`
         });
       }
     }
 
     const newTemplate = await ExamTemplateStructure.create({
       ten_cau_truc,
+      loai_cau_truc,
       chi_tiet
     });
 
@@ -98,12 +137,30 @@ exports.updateTemplate = async (req, res) => {
           message: 'Mức độ không hợp lệ'
         });
       }
-      if (!detail.so_luong || detail.so_luong <= 0) {
+      if (!detail.phan_tram || detail.phan_tram <= 0 || detail.phan_tram > 100) {
         return res.status(400).json({
           success: false,
-          message: 'Số lượng câu hỏi phải lớn hơn 0'
+          message: 'Phần trăm phải lớn hơn 0 và nhỏ hơn hoặc bằng 100'
         });
       }
+    }
+
+    // Kiểm tra tổng phần trăm
+    const totalPercentage = chi_tiet.reduce((sum, item) => sum + item.phan_tram, 0);
+    if (totalPercentage !== 100) {
+      return res.status(400).json({
+        success: false,
+        message: `Tổng phần trăm phải bằng 100%, hiện tại là ${totalPercentage}%`
+      });
+    }
+
+    // Kiểm tra trùng lặp mức độ
+    const difficulties = chi_tiet.map(item => item.muc_do);
+    if (new Set(difficulties).size !== difficulties.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Không được trùng lặp mức độ trong cấu trúc đề thi'
+      });
     }
 
     const updatedTemplate = await ExamTemplateStructure.update(id, {
@@ -159,6 +216,55 @@ exports.deleteTemplate = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Đã xảy ra lỗi khi xóa cấu trúc đề thi mẫu',
+      error: error.message
+    });
+  }
+};
+
+// Chuyển đổi cấu trúc đề thi theo phần trăm thành số lượng câu hỏi cụ thể
+exports.calculateQuestionCounts = async (req, res) => {
+  try {
+    const { template_id, total_questions } = req.body;
+
+    // Lấy cấu trúc đề thi
+    const template = await ExamTemplateStructure.getById(template_id);
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy cấu trúc đề thi'
+      });
+    }
+
+    // Nếu là loại phần trăm, yêu cầu total_questions
+    if (template.loai_cau_truc === 'phan_tram' && (!total_questions || total_questions <= 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp tổng số câu hỏi hợp lệ cho cấu trúc theo phần trăm'
+      });
+    }
+
+    // Tính toán số lượng câu hỏi
+    const questionCounts = ExamTemplateStructure.calculateQuestionCounts(
+      template,
+      total_questions
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Tính toán số lượng câu hỏi thành công',
+      data: {
+        template_id,
+        loai_cau_truc: template.loai_cau_truc,
+        total_questions: template.loai_cau_truc === 'phan_tram' ? total_questions : 
+          Object.values(questionCounts).reduce((sum, count) => sum + count, 0),
+        question_counts: questionCounts
+      }
+    });
+  } catch (error) {
+    console.error('Error calculating question counts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi tính toán số lượng câu hỏi',
       error: error.message
     });
   }

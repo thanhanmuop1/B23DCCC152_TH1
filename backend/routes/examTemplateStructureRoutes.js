@@ -14,4 +14,7 @@ router.put('/:id', examTemplateStructureController.updateTemplate);
 // Xóa cấu trúc đề thi mẫu
 router.delete('/:id', examTemplateStructureController.deleteTemplate);
 
+// Tính toán số lượng câu hỏi từ phần trăm
+router.post('/calculate', examTemplateStructureController.calculateQuestionCounts);
+
 module.exports = router; 
