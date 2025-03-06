@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button, Card, Table, message, Modal, Form, Input, Space, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { ListOfKnowledge, ListOfKnowledgeResponse } from '@/models/listOfKnowledge';
+import { ListOfKnowledge, ListOfKnowledgeResponse } from '@/models/ExamBank/listOfKnowledge';
 import { listOfKnowledgeService } from '@/services/ExamBank/DanhMucKKT/listOfKnowledge';
 
 const ListOfKnowledgePage = () => {
