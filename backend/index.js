@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const path = require('path');
+const questionRoutes = require('./routes/questionRoutes');
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
@@ -15,7 +16,7 @@ app.use(bodyParser.json());
 
 // Import routes
 const subjectRoutes = require('./routes/subject');
-const listOfKnowledgeRoutes = require('./routes/ListOfKnowledge');
+const listOfKnowledgeRoutes = require('./routes/listOfKnowledge');
 
 // Routes
 app.get('/', (req, res) => {
@@ -24,7 +25,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/listOfKnowledge', listOfKnowledgeRoutes);
+app.use('/api/questions', questionRoutes);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
