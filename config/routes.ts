@@ -125,12 +125,12 @@ export default [
 
 	{
 		path: '/exam-bank',
-		name: 'ExamBank',
+		name: 'Ngân Hàng Đề Thi',
 		icon: 'BookOutlined',
 		routes: [
 			{
 				path: '/exam-bank/list-of-knowledge',
-				name: 'List Of Knowledge',
+				name: 'Danh Mục Khối Kiến Thức',
 				component: './ExamBank/DanhMucKKT/listOfKnowledge',
 			},
 		],

@@ -20,45 +20,33 @@ INSERT INTO MonHoc (ma_mon, ten_mon, so_tin_chi) VALUES
 ('CS101', 'Khoa học máy tính cơ bản', 3),
 ('MATH201', 'Toán rời rạc', 4);
 
--- Bảng quản lý khối kiến thức
-CREATE TABLE KhoiKienThuc (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    ten_khoi VARCHAR(255) NOT NULL,
-    mon_hoc_id INT NOT NULL,
-    danh_muc_id INT,
-    FOREIGN KEY (mon_hoc_id) REFERENCES MonHoc(id) ON DELETE CASCADE,
-    FOREIGN KEY (danh_muc_id) REFERENCES DanhMucKhoiKienThuc(id) ON DELETE SET NULL
-);
-
-INSERT INTO KhoiKienThuc (ten_khoi, mon_hoc_id, danh_muc_id) VALUES
-('Lập trình cơ bản', 1, 1),
-('Lý thuyết đồ thị', 2, 2);
-
 -- Bảng quản lý câu hỏi tự luận
 CREATE TABLE CauHoi (
     id INT AUTO_INCREMENT PRIMARY KEY,
     noi_dung TEXT NOT NULL,
     muc_do ENUM('Dễ', 'Trung bình', 'Khó', 'Rất khó') NOT NULL,
-    khoi_kien_thuc_id INT NOT NULL,
-    FOREIGN KEY (khoi_kien_thuc_id) REFERENCES KhoiKienThuc(id) ON DELETE CASCADE
+    mon_hoc_id INT NOT NULL,
+    danh_muc_id INT NOT NULL,
+    FOREIGN KEY (mon_hoc_id) REFERENCES MonHoc(id) ON DELETE CASCADE,
+    FOREIGN KEY (danh_muc_id) REFERENCES DanhMucKhoiKienThuc(id) ON DELETE CASCADE
 );
 
-INSERT INTO CauHoi (noi_dung, muc_do, khoi_kien_thuc_id) VALUES
-('Trình bày các kiểu dữ liệu cơ bản trong lập trình.', 'Dễ', 1),
-('Giải thích thuật toán Dijkstra và ứng dụng của nó.', 'Khó', 2);
+INSERT INTO CauHoi (noi_dung, muc_do, mon_hoc_id, danh_muc_id) VALUES
+('Trình bày các kiểu dữ liệu cơ bản trong lập trình.', 'Dễ', 1, 1),
+('Giải thích thuật toán Dijkstra và ứng dụng của nó.', 'Khó', 2, 2);
 
 -- Bảng quản lý cấu trúc đề thi
 CREATE TABLE CauTrucDeThi (
     id INT AUTO_INCREMENT PRIMARY KEY,
     mon_hoc_id INT NOT NULL,
     muc_do ENUM('Dễ', 'Trung bình', 'Khó', 'Rất khó') NOT NULL,
-    khoi_kien_thuc_id INT NOT NULL,
+    danh_muc_id INT NOT NULL,
     so_luong INT NOT NULL,
     FOREIGN KEY (mon_hoc_id) REFERENCES MonHoc(id) ON DELETE CASCADE,
-    FOREIGN KEY (khoi_kien_thuc_id) REFERENCES KhoiKienThuc(id) ON DELETE CASCADE
+    FOREIGN KEY (danh_muc_id) REFERENCES DanhMucKhoiKienThuc(id) ON DELETE CASCADE
 );
 
-INSERT INTO CauTrucDeThi (mon_hoc_id, muc_do, khoi_kien_thuc_id, so_luong) VALUES
+INSERT INTO CauTrucDeThi (mon_hoc_id, muc_do, danh_muc_id, so_luong) VALUES
 (1, 'Dễ', 1, 2),
 (2, 'Khó', 2, 1);
 
