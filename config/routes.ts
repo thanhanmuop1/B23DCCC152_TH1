@@ -143,6 +143,11 @@ export default [
 				name: 'Câu Hỏi',
 				component: './ExamBank/Questions',
 			},
+			{
+				path: '/exam-bank/exam-structure',
+				name: 'Cấu Trúc Đề Thi',
+				component: './ExamBank/CauTrucDeThi/examStructure',
+			},
 		],
 	},
 
