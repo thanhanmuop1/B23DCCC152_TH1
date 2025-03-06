@@ -36,19 +36,30 @@ INSERT INTO CauHoi (noi_dung, muc_do, mon_hoc_id, danh_muc_id) VALUES
 ('Giải thích thuật toán Dijkstra và ứng dụng của nó.', 'Khó', 2, 2);
 
 -- Bảng quản lý cấu trúc đề thi
-CREATE TABLE CauTrucDeThi (
+CREATE TABLE CauTrucDeThiMau (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    mon_hoc_id INT NOT NULL,
-    muc_do ENUM('Dễ', 'Trung bình', 'Khó', 'Rất khó') NOT NULL,
-    danh_muc_id INT NOT NULL,
-    so_luong INT NOT NULL,
-    FOREIGN KEY (mon_hoc_id) REFERENCES MonHoc(id) ON DELETE CASCADE,
-    FOREIGN KEY (danh_muc_id) REFERENCES DanhMucKhoiKienThuc(id) ON DELETE CASCADE
+    ten_cau_truc VARCHAR(255) NOT NULL UNIQUE
 );
 
-INSERT INTO CauTrucDeThi (mon_hoc_id, muc_do, danh_muc_id, so_luong) VALUES
-(1, 'Dễ', 1, 2),
-(2, 'Khó', 2, 1);
+INSERT INTO CauTrucDeThiMau (ten_cau_truc) VALUES
+('Cấu trúc đề thi 1'),
+('Cấu trúc đề thi 2');
+
+CREATE TABLE CauTrucDeThiMau_ChiTiet (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cau_truc_de_thi_mau_id INT NOT NULL,
+    muc_do ENUM('Dễ', 'Trung bình', 'Khó', 'Rất khó') NOT NULL,
+    so_luong INT NOT NULL,
+    FOREIGN KEY (cau_truc_de_thi_mau_id) REFERENCES CauTrucDeThiMau(id) ON DELETE CASCADE
+);
+
+INSERT INTO CauTrucDeThiMau_ChiTiet (id, cau_truc_de_thi_mau_id, muc_do, so_luong) VALUES
+(1, 1, 'Dễ', 2),
+(2, 1, 'Trung bình', 1),
+(3, 2, 'Khó', 3),
+(4, 2, 'Rất khó', 2);
+
+
 
 -- Bảng quản lý đề thi
 CREATE TABLE DeThi (

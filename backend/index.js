@@ -17,6 +17,7 @@ app.use(bodyParser.json());
 // Import routes
 const subjectRoutes = require('./routes/subject');
 const listOfKnowledgeRoutes = require('./routes/listOfKnowledge');
+const examTemplateStructureRoutes = require('./routes/examTemplateStructureRoutes');
 
 // Routes
 app.get('/', (req, res) => {
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/listOfKnowledge', listOfKnowledgeRoutes);
 app.use('/api/questions', questionRoutes);
+app.use('/api/exam-templates', examTemplateStructureRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
