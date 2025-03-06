@@ -136,7 +136,7 @@ export default [
 			{
 				path: '/exam-bank/question',
 				name: 'Câu Hỏi',
-				component: './ExamBank/CauHoi/question',
+				component: './ExamBank/CauHoi/questions',
 			},
 		],
 	},
