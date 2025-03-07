@@ -5,11 +5,13 @@ import {
   generateExam,
   deleteExam,
   getExamById,
-} from '@/services/exam';
+  randomizeExamQuestions,
+} from '@/services/ExamBank/Exam/exam';
 import type { Exam, ExamRequest, ExamDetail } from '@/models/exam';
 
 export default function useExam() {
   const [loading, setLoading] = useState(false);
+  const [randomizing, setRandomizing] = useState(false);
   const [exams, setExams] = useState<Exam[]>([]);
   const [currentExam, setCurrentExam] = useState<ExamDetail | null>(null);
 
@@ -23,6 +25,7 @@ export default function useExam() {
         message.error(response.message || 'Có lỗi xảy ra khi tải danh sách đề thi');
       }
     } catch (error) {
+      console.error('Error fetching exams:', error);
       message.error('Không thể tải danh sách đề thi');
     } finally {
       setLoading(false);
@@ -41,6 +44,7 @@ export default function useExam() {
         return null;
       }
     } catch (error) {
+      console.error('Error fetching exam detail:', error);
       message.error('Không thể tải chi tiết đề thi');
       return null;
     } finally {
@@ -61,6 +65,7 @@ export default function useExam() {
         return false;
       }
     } catch (error) {
+      console.error('Error creating exam:', error);
       message.error('Không thể tạo đề thi');
       return false;
     } finally {
@@ -81,6 +86,7 @@ export default function useExam() {
         return false;
       }
     } catch (error) {
+      console.error('Error removing exam:', error);
       message.error('Không thể xóa đề thi');
       return false;
     } finally {
@@ -88,13 +94,37 @@ export default function useExam() {
     }
   }, [fetchExams]);
 
+  // Thêm hàm randomize questions
+  const randomizeQuestions = useCallback(async (id: number) => {
+    try {
+      setRandomizing(true);
+      const response = await randomizeExamQuestions(id);
+      if (response.success) {
+        message.success('Random vị trí câu hỏi thành công');
+        setCurrentExam(response.data || null);
+        return response.data;
+      } else {
+        message.error(response.message || 'Có lỗi xảy ra khi random vị trí câu hỏi');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error randomizing questions:', error);
+      message.error('Không thể random vị trí câu hỏi');
+      return null;
+    } finally {
+      setRandomizing(false);
+    }
+  }, []);
+
   return {
     loading,
+    randomizing,
     exams,
     currentExam,
     fetchExams,
     fetchExamDetail,
     createExam,
     removeExam,
+    randomizeQuestions,
   };
 } 

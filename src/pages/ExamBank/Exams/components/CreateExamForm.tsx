@@ -1,217 +1,199 @@
-import React, { useState } from 'react';
-import { Modal, Form, Input, Select, InputNumber, Button, Radio, Space, Tag, Dropdown } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Modal, Form, Input, Select, InputNumber, Button, Radio, Space, Tag, Dropdown, message } from 'antd';
 import { MinusCircleOutlined, PlusOutlined, DownOutlined } from '@ant-design/icons';
-import type { ExamRequest } from '@/models/exam';
-import SelectTemplateModal from './SelectTemplateModal';
+import { useSubjects } from '@/hooks/ExamBank/useSubjects';
+import type { RadioChangeEvent } from 'antd';
 
 interface CreateExamFormProps {
   visible: boolean;
   onCancel: () => void;
-  onSubmit: (values: ExamRequest) => void;
+  onSubmit: (values: any) => void;
 }
 
-const difficultyLevels = ['Dễ', 'Trung bình', 'Khó', 'Rất khó'];
 
 const CreateExamForm: React.FC<CreateExamFormProps> = ({
   visible,
   onCancel,
   onSubmit,
 }) => {
+  const [createType, setCreateType] = useState<'new' | 'template' | null>(null);
   const [form] = Form.useForm();
   const [isTemplateModalVisible, setIsTemplateModalVisible] = useState(false);
-  const [showCustomStructure, setShowCustomStructure] = useState(false);
+  const { subjects, loading: subjectsLoading, fetchSubjects } = useSubjects();
 
-  const handleTemplateSelect = (templateId: number, totalQuestions?: number) => {
-    setIsTemplateModalVisible(false);
-    form.setFieldsValue({
-      template_id: templateId,
-      total_questions: totalQuestions,
-    });
+  useEffect(() => {
+    fetchSubjects();
+  }, [fetchSubjects]);
+
+  const handleCreateTypeChange = (e: RadioChangeEvent) => {
+    setCreateType(e.target.value);
+    form.resetFields(['mon_hoc_id', 'ten_de', 'chi_tiet', 'template_id']);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (values: any) => {
     try {
-      const values = await form.validateFields();
-      onSubmit(values);
+      if (createType === 'template') {
+        // Xử lý tạo đề từ mẫu
+        const templateData = {
+          mon_hoc_id: values.mon_hoc_id,
+          ten_de: values.ten_de,
+          template_id: values.template_id
+        };
+        await onSubmit(templateData);
+      } else {
+        // Xử lý tạo cấu trúc mới
+        const newStructureData = {
+          mon_hoc_id: values.mon_hoc_id,
+          ten_de: values.ten_de,
+          cau_truc: values.chi_tiet.map((detail: any) => ({
+            muc_do: detail.muc_do,
+            so_luong: detail.so_luong,
+            danh_muc_id: 1
+          }))
+        };
+        await onSubmit(newStructureData);
+      }
+      onCancel();
     } catch (error) {
-      console.error('Validation failed:', error);
+      console.error('Error submitting form:', error);
+      message.error('Có lỗi xảy ra khi tạo đề thi');
     }
   };
 
   return (
-    <Form.Provider>
-      <Modal
-        title="Tạo đề thi mới"
-        visible={visible}
-        onCancel={onCancel}
-        onOk={handleSubmit}
-        width={800}
-        destroyOnClose
+    <Modal
+      title="Tạo đề thi mới"
+      visible={visible}
+      onCancel={onCancel}
+      footer={null}
+    >
+      <Form
+        form={form}
+        onFinish={handleSubmit}
+        layout="vertical"
       >
-        <Form
-          form={form}
-          layout="vertical"
-          preserve={false}
+        <Form.Item
+          name="createType"
+          label="Chọn cách tạo đề thi"
+          rules={[{ required: true, message: 'Vui lòng chọn cách tạo đề thi' }]}
         >
-          <Form.Item
-            name="ten_de"
-            label="Tên đề thi"
-            rules={[{ required: true, message: 'Vui lòng nhập tên đề thi' }]}
-          >
-            <Input placeholder="Nhập tên đề thi" />
-          </Form.Item>
+          <Radio.Group onChange={handleCreateTypeChange}>
+            <Space direction="vertical">
+              <Radio value="new">Tạo cấu trúc mới</Radio>
+              <Radio value="template">Chọn từ mẫu có sẵn</Radio>
+            </Space>
+          </Radio.Group>
+        </Form.Item>
 
-          <Form.Item
-            name="mon_hoc_id"
-            label="Môn học"
-            rules={[{ required: true, message: 'Vui lòng chọn môn học' }]}
-          >
-            <Select placeholder="Chọn môn học">
-              <Select.Option value={1}>Khoa học máy tính cơ bản</Select.Option>
-              <Select.Option value={2}>Toán rời rạc</Select.Option>
-            </Select>
-          </Form.Item>
+        {createType === 'new' && (
+          <>
+            <Form.Item
+              name="mon_hoc_id"
+              label="Môn học"
+              rules={[{ required: true, message: 'Vui lòng chọn môn học' }]}
+            >
+              <Select placeholder="Chọn môn học">
+                {subjects.map(subject => (
+                  <Select.Option key={subject.id} value={subject.id}>
+                    {subject.ma_mon} - {subject.ten_mon}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-          <Form.Item
-            label="Cấu trúc đề thi"
-            required
-          >
-            <Select
-              placeholder="Chọn hoặc tạo cấu trúc đề thi"
-              dropdownRender={(menu) => (
-                <div>
-                  <div style={{ padding: '8px', borderBottom: '1px solid #e8e8e8' }}>
-                    <Button
-                      type="text"
-                      block
-                      onClick={() => {
-                        setIsTemplateModalVisible(true);
-                        setShowCustomStructure(false);
-                      }}
-                    >
-                      Chọn từ mẫu có sẵn
-                    </Button>
-                    <Button
-                      type="text"
-                      block
-                      onClick={() => {
-                        setShowCustomStructure(true);
-                        setIsTemplateModalVisible(false);
-                      }}
-                    >
-                      Tạo cấu trúc mới
-                    </Button>
-                  </div>
-                </div>
+            <Form.Item
+              name="ten_de"
+              label="Tên đề thi"
+              rules={[{ required: true, message: 'Vui lòng nhập tên đề thi' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.List
+              name="chi_tiet"
+              rules={[{ required: true, message: 'Vui lòng thêm ít nhất một mức độ' }]}
+            >
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map((field, index) => (
+                    <Space key={field.key} align="baseline">
+                      <Form.Item
+                        {...field}
+                        name={[field.name, 'muc_do']}
+                        rules={[{ required: true, message: 'Chọn mức độ' }]}
+                      >
+                        <Select style={{ width: 120 }} placeholder="Mức độ">
+                          {['Dễ', 'Trung bình', 'Khó', 'Rất khó'].map(level => (
+                            <Select.Option key={level} value={level}>
+                              {level}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+
+                      <Form.Item
+                        {...field}
+                        name={[field.name, 'so_luong']}
+                        rules={[{ required: true, message: 'Nhập số lượng' }]}
+                      >
+                        <InputNumber min={1} placeholder="Số câu" />
+                      </Form.Item>
+
+                      <MinusCircleOutlined onClick={() => remove(field.name)} />
+                    </Space>
+                  ))}
+
+                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                    Thêm mức độ
+                  </Button>
+                </>
               )}
-            />
-          </Form.Item>
+            </Form.List>
+          </>
+        )}
 
-          {showCustomStructure && (
-            <>
-              <Form.Item
-                name="loai_cau_truc"
-                label="Loại cấu trúc"
-                rules={[{ required: true, message: 'Vui lòng chọn loại cấu trúc' }]}
-              >
-                <Radio.Group>
-                  <Radio value="so_luong">Theo số lượng</Radio>
-                  <Radio value="phan_tram">Theo phần trăm</Radio>
-                </Radio.Group>
-              </Form.Item>
+        {createType === 'template' && (
+          <>
+            <Form.Item
+              name="mon_hoc_id"
+              label="Môn học"
+              rules={[{ required: true, message: 'Vui lòng chọn môn học' }]}
+            >
+              <Select placeholder="Chọn môn học">
+                {/* Options từ API */}
+              </Select>
+            </Form.Item>
 
-              <Form.List
-                name="chi_tiet"
-                rules={[
-                  {
-                    validator: async (_, details) => {
-                      if (!details || details.length < 1) {
-                        return Promise.reject(new Error('Vui lòng thêm ít nhất một mức độ'));
-                      }
-                    },
-                  },
-                ]}
-              >
-                {(fields, { add, remove }, { errors }) => (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {fields.map((field, index) => (
-                      <Space key={field.key} align="baseline">
-                        <Form.Item
-                          {...field}
-                          name={[field.name, 'muc_do']}
-                          rules={[{ required: true, message: 'Chọn mức độ' }]}
-                        >
-                          <Select style={{ width: 120 }} placeholder="Mức độ">
-                            {difficultyLevels.map(level => (
-                              <Select.Option key={level} value={level}>
-                                {level}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
+            <Form.Item
+              name="template_id"
+              label="Chọn mẫu cấu trúc"
+              rules={[{ required: true, message: 'Vui lòng chọn mẫu cấu trúc' }]}
+            >
+              <Select placeholder="Chọn mẫu">
+                {/* Options từ API */}
+              </Select>
+            </Form.Item>
 
-                        <Form.Item
-                          {...field}
-                          name={[field.name, form.getFieldValue('loai_cau_truc') === 'so_luong' ? 'so_luong' : 'phan_tram']}
-                          rules={[{ required: true, message: 'Nhập giá trị' }]}
-                        >
-                          <InputNumber
-                            min={1}
-                            placeholder={form.getFieldValue('loai_cau_truc') === 'so_luong' ? 'Số câu' : 'Phần trăm'}
-                          />
-                        </Form.Item>
+            <Form.Item
+              name="ten_de"
+              label="Tên đề thi"
+              rules={[{ required: true, message: 'Vui lòng nhập tên đề thi' }]}
+            >
+              <Input />
+            </Form.Item>
+          </>
+        )}
 
-                        <MinusCircleOutlined onClick={() => remove(field.name)} />
-                      </Space>
-                    ))}
-
-                    <Button
-                      type="dashed"
-                      onClick={() => add()}
-                      block
-                      icon={<PlusOutlined />}
-                    >
-                      Thêm mức độ
-                    </Button>
-                    <Form.ErrorList errors={errors} />
-                  </div>
-                )}
-              </Form.List>
-
-              {form.getFieldValue('loai_cau_truc') === 'phan_tram' && (
-                <Form.Item
-                  name="total_questions"
-                  label="Tổng số câu hỏi"
-                  rules={[
-                    { required: true, message: 'Vui lòng nhập tổng số câu hỏi' },
-                    { type: 'number', min: 1, message: 'Số câu hỏi phải lớn hơn 0' }
-                  ]}
-                >
-                  <InputNumber
-                    min={1}
-                    placeholder="Nhập tổng số câu hỏi"
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
-              )}
-            </>
-          )}
-
-          <Form.Item
-            name="template_id"
-            hidden
-          >
-            <Input />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <SelectTemplateModal
-        open={isTemplateModalVisible}
-        onCancel={() => setIsTemplateModalVisible(false)}
-        onSelect={handleTemplateSelect}
-      />
-    </Form.Provider>
+        <Form.Item>
+          <Space>
+            <Button onClick={onCancel}>Hủy</Button>
+            <Button type="primary" htmlType="submit">
+              {createType === 'template' ? 'Tạo đề từ mẫu' : 'Tạo cấu trúc mới'}
+            </Button>
+          </Space>
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 };
 

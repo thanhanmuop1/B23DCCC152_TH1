@@ -29,4 +29,65 @@
     color: #000 !important;
     background: none !important;
   }
+}
+
+.exam-detail-card {
+  .exam-header {
+    margin-bottom: 24px;
+
+    .exam-meta {
+      margin-top: 16px;
+      color: rgba(0, 0, 0, 0.65);
+    }
+  }
+
+  .exam-questions-table {
+    margin-top: 24px;
+  }
+}
+
+.highlighted-row {
+  background-color: #fffbe6 !important;
+  
+  &:hover > td {
+    background-color: #fff8e0 !important;
+  }
+  
+  td {
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background-color: #faad14;
+    }
+  }
+}
+
+@media print {
+  .ant-btn,
+  .ant-alert {
+    display: none !important;
+  }
+  
+  .ant-card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .ant-card-body {
+    padding: 0 !important;
+  }
+  
+  .highlighted-row {
+    background-color: transparent !important;
+    
+    td::before {
+      display: none !important;
+    }
+  }
 } 

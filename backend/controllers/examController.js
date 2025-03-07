@@ -4,7 +4,7 @@ const Exam = require('../models/exam');
 exports.createExamWithStructure = async (req, res) => {
   try {
     const { mon_hoc_id, ten_de, cau_truc } = req.body;
-
+    console.log(mon_hoc_id, ten_de, cau_truc);
     // Validate required fields
     if (!mon_hoc_id || !ten_de || !cau_truc || !Array.isArray(cau_truc) || cau_truc.length === 0) {
       return res.status(400).json({
@@ -140,6 +140,37 @@ exports.deleteExam = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Đã xảy ra lỗi khi xóa đề thi',
+      error: error.message
+    });
+  }
+};
+
+// Controller function to randomize questions in an exam
+exports.randomizeExamQuestions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Use the model method to randomize questions
+    const examWithRandomizedQuestions = await Exam.randomizeQuestions(id);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Đã random vị trí câu hỏi trong đề thi thành công',
+      data: examWithRandomizedQuestions
+    });
+  } catch (error) {
+    console.error('Error randomizing exam questions:', error);
+    
+    if (error.message === 'Không tìm thấy câu hỏi trong đề thi này') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Đã xảy ra lỗi khi random vị trí câu hỏi',
       error: error.message
     });
   }

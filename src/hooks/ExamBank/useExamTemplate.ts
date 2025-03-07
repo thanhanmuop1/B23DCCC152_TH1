@@ -5,7 +5,7 @@ import {
   createExamTemplate,
   updateExamTemplate,
   deleteExamTemplate,
-} from '@/services/examTemplate';
+} from '@/services/ExamBank/Template/examTemplate';
 import type { ExamTemplate, ExamTemplateRequest } from '@/models/examTemplate';
 
 export default function useExamTemplate() {

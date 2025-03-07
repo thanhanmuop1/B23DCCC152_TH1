@@ -1,5 +1,5 @@
 import { request } from 'umi';
-import type { Exam, ExamRequest, ApiResponse } from '@/models/exam';
+import type { Exam, ExamRequest, ApiResponse, ExamDetail } from '@/models/exam';
 
 const BASE_URL = 'http://localhost:3000/api/exams';
 
@@ -28,7 +28,7 @@ export async function generateExam(data: ExamRequest): Promise<ApiResponse<Exam>
 /**
  * Lấy chi tiết đề thi
  */
-export async function getExamById(id: number): Promise<ApiResponse<Exam>> {
+export async function getExamById(id: number): Promise<ApiResponse<ExamDetail>> {
   return request(`${BASE_URL}/${id}`, {
     method: 'GET',
   });
@@ -41,4 +41,13 @@ export async function deleteExam(id: number): Promise<ApiResponse<null>> {
   return request(`${BASE_URL}/${id}`, {
     method: 'DELETE',
   });
-} 
+}
+
+/**
+ * Random vị trí câu hỏi trong đề thi
+ */
+export async function randomizeExamQuestions(id: number): Promise<ApiResponse<ExamDetail>> {
+  return request(`${BASE_URL}/${id}/randomize`, {
+    method: 'POST',
+  });
+}

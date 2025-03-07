@@ -132,6 +132,54 @@ class Exam {
       connection.release();
     }
   }
+
+  // Randomize questions in an exam
+  static async randomizeQuestions(examId) {
+    // Get all questions for this exam
+    const [examQuestions] = await db.query(
+      `SELECT de_thi_id, cau_hoi_id FROM DeThi_CauHoi WHERE de_thi_id = ?`,
+      [examId]
+    );
+    
+    if (examQuestions.length === 0) {
+      throw new Error('Không tìm thấy câu hỏi trong đề thi này');
+    }
+    
+    // Shuffle the questions using Fisher-Yates algorithm
+    for (let i = examQuestions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [examQuestions[i], examQuestions[j]] = [examQuestions[j], examQuestions[i]];
+    }
+    
+    // Start a transaction
+    await db.query('START TRANSACTION');
+    
+    try {
+      // First, delete all existing questions from the exam
+      await db.query(
+        `DELETE FROM DeThi_CauHoi WHERE de_thi_id = ?`,
+        [examId]
+      );
+      
+      // Then, insert the shuffled questions back
+      for (const question of examQuestions) {
+        await db.query(
+          `INSERT INTO DeThi_CauHoi (de_thi_id, cau_hoi_id) VALUES (?, ?)`,
+          [examId, question.cau_hoi_id]
+        );
+      }
+      
+      // Commit the transaction
+      await db.query('COMMIT');
+      
+      // Get the updated exam with questions
+      return await this.getById(examId);
+    } catch (error) {
+      // Rollback in case of error
+      await db.query('ROLLBACK');
+      throw error;
+    }
+  }
 }
 
 module.exports = Exam; 
