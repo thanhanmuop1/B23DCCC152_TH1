@@ -1,5 +1,5 @@
 import { request } from 'umi';
-import type { ExamTemplate, ExamTemplateRequest, ApiResponse } from '@/models/examTemplate';
+import type { ExamTemplate, ExamTemplateRequest, ApiResponse } from '@/models/ExamBank/examTemplate';
 
 const BASE_URL = 'http://localhost:3000/api/exam-templates';
 

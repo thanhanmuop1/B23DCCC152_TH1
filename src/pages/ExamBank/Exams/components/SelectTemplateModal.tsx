@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, InputNumber, Radio, Space, Tag, Alert } from 'antd';
-import type { ExamTemplate } from '@/models/examTemplate';
+import { Modal, Form, InputNumber, Radio, Space, Tag, Alert, Select, Input } from 'antd';
+import type { ExamTemplate } from '@/models/ExamBank/examTemplate';
 import useExamTemplate from '@/hooks/ExamBank/useExamTemplate';
+import { useSubjects } from '@/hooks/ExamBank/useSubjects';
 
 interface SelectTemplateModalProps {
   open: boolean;
   onCancel: () => void;
-  onSelect: (templateId: number, totalQuestions?: number) => void;
+  onSelect: (templateId: number, monHocId: number, tenDe: string, totalQuestions?: number) => void;
 }
 
 const SelectTemplateModal: React.FC<SelectTemplateModalProps> = ({
@@ -16,15 +17,22 @@ const SelectTemplateModal: React.FC<SelectTemplateModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const { templates, fetchTemplates, loading } = useExamTemplate();
+  const { subjects, loading: subjectsLoading, fetchSubjects } = useSubjects();
   const [selectedTemplate, setSelectedTemplate] = useState<ExamTemplate | null>(null);
 
   useEffect(() => {
     if (open) {
       fetchTemplates();
+      fetchSubjects();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open && form) {
       form.resetFields();
       setSelectedTemplate(null);
     }
-  }, [open, fetchTemplates, form]);
+  }, [open]);
 
   const handleTemplateSelect = (template: ExamTemplate) => {
     setSelectedTemplate(template);
@@ -45,7 +53,12 @@ const SelectTemplateModal: React.FC<SelectTemplateModalProps> = ({
       }
 
       const values = await form.validateFields();
-      onSelect(selectedTemplate.id, values.total_questions);
+      onSelect(
+        selectedTemplate.id, 
+        values.mon_hoc_id,
+        values.ten_de,
+        values.total_questions
+      );
     } catch (error) {
       console.error('Validation failed:', error);
     }
@@ -90,6 +103,33 @@ const SelectTemplateModal: React.FC<SelectTemplateModalProps> = ({
       destroyOnClose
     >
       <Form form={form} layout="vertical">
+        <Form.Item
+          name="mon_hoc_id"
+          label="Môn học"
+          rules={[{ required: true, message: 'Vui lòng chọn môn học' }]}
+        >
+          <Select 
+            placeholder="Chọn môn học"
+            loading={subjectsLoading}
+            optionFilterProp="children"
+            showSearch
+          >
+            {subjects.map(subject => (
+              <Select.Option key={subject.id} value={subject.id}>
+                {subject.ma_mon} - {subject.ten_mon}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="ten_de"
+          label="Tên đề thi"
+          rules={[{ required: true, message: 'Vui lòng nhập tên đề thi' }]}
+        >
+          <Input placeholder="Nhập tên đề thi" />
+        </Form.Item>
+
         <Form.Item label="Chọn cấu trúc đề thi">
           <Radio.Group 
             onChange={(e) => handleTemplateSelect(e.target.value)} 

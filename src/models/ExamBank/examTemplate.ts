@@ -10,6 +10,7 @@ export interface ExamTemplateDetail {
 
 export interface ExamTemplate {
   id: number;
+  mon_hoc_id: number; 
   ten_cau_truc: string;
   loai_cau_truc: StructureType;
   chi_tiet: ExamTemplateDetail[];

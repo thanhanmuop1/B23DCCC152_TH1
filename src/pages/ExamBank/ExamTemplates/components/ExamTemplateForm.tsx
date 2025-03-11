@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Select, InputNumber, Button, Radio } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import type { ExamTemplate, ExamTemplateRequest, StructureType } from '@/models/examTemplate';
+import type { ExamTemplate, ExamTemplateRequest, StructureType } from '@/models/ExamBank/examTemplate';
+import { useSubjects } from '@/hooks/ExamBank/useSubjects';
 
 interface ExamTemplateFormProps {
   visible: boolean;
@@ -20,12 +21,14 @@ const ExamTemplateForm: React.FC<ExamTemplateFormProps> = ({
 }) => {
   const [form] = Form.useForm();
   const structureType = Form.useWatch('loai_cau_truc', form);
+  const { subjects, fetchSubjects } = useSubjects();
 
   useEffect(() => {
     if (visible) {
       if (initialValues) {
         form.setFieldsValue({
           ten_cau_truc: initialValues.ten_cau_truc,
+          mon_hoc_id: initialValues.mon_hoc_id,
           loai_cau_truc: initialValues.loai_cau_truc,
           chi_tiet: initialValues.chi_tiet.map(detail => ({
             muc_do: detail.muc_do,
@@ -41,7 +44,7 @@ const ExamTemplateForm: React.FC<ExamTemplateFormProps> = ({
         });
       }
     }
-  }, [visible, initialValues, form]);
+  }, [visible, initialValues, form, fetchSubjects]);
 
   const handleStructureTypeChange = (type: StructureType) => {
     // Reset chi tiết khi đổi loại
@@ -89,6 +92,24 @@ const ExamTemplateForm: React.FC<ExamTemplateFormProps> = ({
         form={form}
         layout="vertical"
       >
+        <Form.Item
+          name="mon_hoc_id"
+          label="Môn học"
+          rules={[{ required: true, message: 'Vui lòng chọn môn học' }]}
+        >
+          <Select
+            placeholder="Chọn môn học"
+            showSearch
+            optionFilterProp="children"
+          >
+            {subjects.map(subject => (
+              <Select.Option key={subject.id} value={subject.id}>
+                {subject.ma_mon} - {subject.ten_mon}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
         <Form.Item
           name="ten_cau_truc"
           label="Tên cấu trúc"

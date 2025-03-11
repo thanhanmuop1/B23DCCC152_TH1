@@ -1,22 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Select, Input } from 'antd';
+import React, { useEffect } from 'react';
+import { Form, Select, Input, FormInstance, Space, Tag } from 'antd';
+import { useSubjects } from '@/hooks/ExamBank/useSubjects';
+import useExamTemplate from '@/hooks/ExamBank/useExamTemplate';
+import { ExamTemplate } from '@/models/ExamBank/examTemplate';
 
 const SelectFromTemplate: React.FC<{ form: FormInstance }> = ({ form }) => {
-  const [templates, setTemplates] = useState([]);
+  const { subjects, fetchSubjects } = useSubjects();
+  const { templates, fetchTemplates } = useExamTemplate();
+  const selectedMonHoc = Form.useWatch('mon_hoc_id', form);
 
   useEffect(() => {
-    // Fetch templates from API
-    const fetchTemplates = async () => {
-      try {
-        const response = await fetch('/api/exam-templates');
-        const data = await response.json();
-        setTemplates(data);
-      } catch (error) {
-        console.error('Error fetching templates:', error);
-      }
-    };
     fetchTemplates();
+    fetchSubjects();
   }, []);
+
+  const renderTemplateDetails = (template: ExamTemplate) => (
+    <Space direction="vertical" size="small">
+      <div>
+        <Tag color={template.loai_cau_truc === 'so_luong' ? 'blue' : 'purple'}>
+          {template.loai_cau_truc === 'so_luong' ? 'Theo số lượng' : 'Theo phần trăm'}
+        </Tag>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {template.chi_tiet.map(detail => (
+          <Tag
+            key={detail.muc_do}
+            color={
+              detail.muc_do === 'Dễ' ? 'green' :
+              detail.muc_do === 'Trung bình' ? 'blue' :
+              detail.muc_do === 'Khó' ? 'orange' : 'red'
+            }
+          >
+            {detail.muc_do}: {template.loai_cau_truc === 'so_luong' ? 
+              `${detail.so_luong} câu` : 
+              `${detail.phan_tram}%`}
+          </Tag>
+        ))}
+      </div>
+    </Space>
+  );
 
   return (
     <>
@@ -25,8 +47,16 @@ const SelectFromTemplate: React.FC<{ form: FormInstance }> = ({ form }) => {
         label="Môn học"
         rules={[{ required: true, message: 'Vui lòng chọn môn học' }]}
       >
-        <Select placeholder="Chọn môn học">
-          {/* Options từ API */}
+        <Select 
+          placeholder="Chọn môn học"
+          showSearch
+          optionFilterProp="children"
+        >
+          {subjects.map(subject => (
+            <Select.Option key={subject.id} value={subject.id}>
+              {subject.ma_mon} - {subject.ten_mon}
+            </Select.Option>
+          ))}
         </Select>
       </Form.Item>
 
@@ -35,12 +65,22 @@ const SelectFromTemplate: React.FC<{ form: FormInstance }> = ({ form }) => {
         label="Chọn mẫu cấu trúc"
         rules={[{ required: true, message: 'Vui lòng chọn mẫu cấu trúc' }]}
       >
-        <Select placeholder="Chọn mẫu">
-          {templates.map(template => (
-            <Select.Option key={template.id} value={template.id}>
-              {template.ten_cau_truc}
-            </Select.Option>
-          ))}
+        <Select 
+          placeholder="Chọn mẫu"
+          disabled={!selectedMonHoc}
+        >
+          {templates
+            .filter(template => template.mon_hoc_id === selectedMonHoc)
+            .map(template => (
+              <Select.Option key={template.id} value={template.id}>
+                <div style={{ padding: '8px 0' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 8 }}>
+                    {template.ten_cau_truc}
+                  </div>
+                  {renderTemplateDetails(template)}
+                </div>
+              </Select.Option>
+            ))}
         </Select>
       </Form.Item>
 
@@ -49,7 +89,7 @@ const SelectFromTemplate: React.FC<{ form: FormInstance }> = ({ form }) => {
         label="Tên đề thi"
         rules={[{ required: true, message: 'Vui lòng nhập tên đề thi' }]}
       >
-        <Input />
+        <Input placeholder="Nhập tên đề thi" />
       </Form.Item>
     </>
   );

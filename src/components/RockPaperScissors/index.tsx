@@ -1,124 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, Button, Row, Col, Typography, Space, Divider } from 'antd';
 import { connect, Dispatch } from 'umi';
 import { HistoryOutlined } from '@ant-design/icons';
 import GameHistory from '@/components/GameHistory';
 import styles from './index.less';
+import { Choice, GameResult, GameModelType } from '@/models/game';
+import { choiceToEmoji, choiceToVietnamese, resultToVietnamese, resultToColor } from '@/utils/rockPaperScissors';
 
 const { Title, Text } = Typography;
 
 interface RockPaperScissorsProps {
   dispatch: Dispatch;
+  game: {
+    playerChoice: Choice;
+    computerChoice: Choice;
+    result: GameResult;
+    score: {
+      player: number;
+      computer: number;
+    };
+    history: any[];
+  };
 }
 
-const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
-  const [playerChoice, setPlayerChoice] = useState<'rock' | 'paper' | 'scissors' | null>(null);
-  const [computerChoice, setComputerChoice] = useState<'rock' | 'paper' | 'scissors' | null>(null);
-  const [result, setResult] = useState<'win' | 'lose' | 'draw' | null>(null);
-  const [score, setScore] = useState({ player: 0, computer: 0 });
+const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch, game }) => {
   const [isHistoryVisible, setIsHistoryVisible] = useState(false);
-
-  useEffect(() => {
-    dispatch({ type: 'gameHistory/fetch' });
-  }, []);
-
-  const choiceToEmoji = (choice: 'rock' | 'paper' | 'scissors' | null): string => {
-    switch (choice) {
-      case 'rock': return '👊';
-      case 'paper': return '✋';
-      case 'scissors': return '✌️';
-      default: return '❓';
-    }
-  };
-
-  const choiceToVietnamese = (choice: 'rock' | 'paper' | 'scissors' | null): string => {
-    switch (choice) {
-      case 'rock': return 'Búa';
-      case 'paper': return 'Bao';
-      case 'scissors': return 'Kéo';
-      default: return '';
-    }
-  };
-
-  const resultToVietnamese = (gameResult: 'win' | 'lose' | 'draw' | null): string => {
-    switch (gameResult) {
-      case 'win': return 'Bạn thắng!';
-      case 'lose': return 'Bạn thua!';
-      case 'draw': return 'Hòa!';
-      default: return '';
-    }
-  };
-
-  const resultToColor = (gameResult: 'win' | 'lose' | 'draw' | null): string => {
-    switch (gameResult) {
-      case 'win': return '#52c41a';
-      case 'lose': return '#f5222d';
-      case 'draw': return '#faad14';
-      default: return '';
-    }
-  };
-
-  const getComputerChoice = (): 'rock' | 'paper' | 'scissors' => {
-    const choices: ('rock' | 'paper' | 'scissors')[] = ['rock', 'paper', 'scissors'];
-    const randomIndex = Math.floor(Math.random() * choices.length);
-    return choices[randomIndex];
-  };
-
-  const determineWinner = (
-    player: 'rock' | 'paper' | 'scissors',
-    computer: 'rock' | 'paper' | 'scissors'
-  ): 'win' | 'lose' | 'draw' => {
-    if (player === computer) return 'draw';
-    
-    if (
-      (player === 'rock' && computer === 'scissors') ||
-      (player === 'paper' && computer === 'rock') ||
-      (player === 'scissors' && computer === 'paper')
-    ) {
-      return 'win';
-    }
-    
-    return 'lose';
-  };
-
-  const makeChoice = (choice: 'rock' | 'paper' | 'scissors') => {
-    const computer = getComputerChoice();
-    const gameResult = determineWinner(choice, computer);
-    
-    setPlayerChoice(choice);
-    setComputerChoice(computer);
-    setResult(gameResult);
-    
-    setScore(prev => ({
-      player: gameResult === 'win' ? prev.player + 1 : prev.player,
-      computer: gameResult === 'lose' ? prev.computer + 1 : prev.computer,
-    }));
-
-    // Add to history
-    dispatch({
-      type: 'gameHistory/add',
-      payload: {
-        playerChoice: choice,
-        computerChoice: computer,
-        result: gameResult,
-      },
-    });
-  };
-
-  const resetGame = () => {
-    setPlayerChoice(null);
-    setComputerChoice(null);
-    setResult(null);
-  };
-
-  const resetScore = () => {
-    setScore({ player: 0, computer: 0 });
-    dispatch({ type: 'gameHistory/clear' });
-    resetGame();
-  };
 
   const showHistory = () => {
     setIsHistoryVisible(true);
+  };
+
+  const handleMakeChoice = (choice: Choice) => {
+    dispatch({
+      type: 'game/makeChoice',
+      payload: choice,
+    });
+  };
+
+  const handleResetGame = () => {
+    dispatch({ type: 'game/resetGame' });
+  };
+
+  const handleResetScore = () => {
+    dispatch({ type: 'game/resetScore' });
   };
 
   return (
@@ -130,10 +54,10 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
           <Card title="Điểm số" className={styles.scoreCard}>
             <Row justify="space-between">
               <Col>
-                <Text strong>Bạn: {score.player}</Text>
+                <Text strong>Bạn: {game.score.player}</Text>
               </Col>
               <Col>
-                <Text strong>Máy: {score.computer}</Text>
+                <Text strong>Máy: {game.score.computer}</Text>
               </Col>
             </Row>
           </Card>
@@ -144,9 +68,9 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
         <Col className={styles.playerChoice}>
           <Title level={4}>Bạn chọn</Title>
           <div className={styles.choiceEmoji}>
-            {choiceToEmoji(playerChoice)}
+            {choiceToEmoji(game.playerChoice)}
           </div>
-          <Text>{choiceToVietnamese(playerChoice)}</Text>
+          <Text>{choiceToVietnamese(game.playerChoice)}</Text>
         </Col>
         
         <Col className={styles.vsColumn}>
@@ -156,16 +80,16 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
         <Col className={styles.computerChoice}>
           <Title level={4}>Máy chọn</Title>
           <div className={styles.choiceEmoji}>
-            {choiceToEmoji(computerChoice)}
+            {choiceToEmoji(game.computerChoice)}
           </div>
-          <Text>{choiceToVietnamese(computerChoice)}</Text>
+          <Text>{choiceToVietnamese(game.computerChoice)}</Text>
         </Col>
       </Row>
 
-      {result && (
+      {game.result && (
         <div className={styles.resultContainer}>
-          <Title level={2} style={{ color: resultToColor(result) }}>
-            {resultToVietnamese(result)}
+          <Title level={2} style={{ color: resultToColor(game.result) }}>
+            {resultToVietnamese(game.result)}
           </Title>
         </div>
       )}
@@ -178,7 +102,7 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
           <Button 
             type="primary" 
             size="large" 
-            onClick={() => makeChoice('rock')}
+            onClick={() => handleMakeChoice('rock')}
             className={styles.choiceButton}
           >
             <span className={styles.buttonEmoji}>👊</span>
@@ -189,7 +113,7 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
           <Button 
             type="primary" 
             size="large" 
-            onClick={() => makeChoice('paper')}
+            onClick={() => handleMakeChoice('paper')}
             className={styles.choiceButton}
           >
             <span className={styles.buttonEmoji}>✋</span>
@@ -200,7 +124,7 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
           <Button 
             type="primary" 
             size="large" 
-            onClick={() => makeChoice('scissors')}
+            onClick={() => handleMakeChoice('scissors')}
             className={styles.choiceButton}
           >
             <span className={styles.buttonEmoji}>✌️</span>
@@ -211,8 +135,8 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
 
       <Row justify="center" style={{ marginTop: 24 }}>
         <Space>
-          <Button onClick={resetGame}>Chơi lại</Button>
-          <Button danger onClick={resetScore}>Đặt lại điểm</Button>
+          <Button onClick={handleResetGame}>Chơi lại</Button>
+          <Button danger onClick={handleResetScore}>Đặt lại điểm</Button>
           <Button 
             type="primary" 
             icon={<HistoryOutlined />}
@@ -231,4 +155,6 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ dispatch }) => {
   );
 };
 
-export default connect()(RockPaperScissors); 
+export default connect(({ game }: { game: GameModelType['state'] }) => ({
+  game,
+}))(RockPaperScissors); 

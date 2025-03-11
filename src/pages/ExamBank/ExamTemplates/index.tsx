@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Button, Table, Space, Modal, message, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import type { ExamTemplate } from '@/models/examTemplate';
+import type { ExamTemplate } from '@/models/ExamBank/examTemplate';
 import useExamTemplate from '@/hooks/ExamBank/useExamTemplate';
 import ExamTemplateForm from './components/ExamTemplateForm';
 
@@ -76,6 +76,12 @@ const ExamTemplateManagement: React.FC = () => {
 
   const columns = [
     {
+      title: 'Môn học',
+      dataIndex: 'ten_mon',
+      key: 'ten_mon',
+      width: '25%',
+    },
+    {
       title: 'Tên cấu trúc',
       dataIndex: 'ten_cau_truc',
       key: 'ten_cau_truc',
@@ -91,6 +97,12 @@ const ExamTemplateManagement: React.FC = () => {
           {type === 'so_luong' ? 'Số lượng' : 'Phần trăm'}
         </Tag>
       ),
+    },
+    {
+      title: 'Môn học',
+      dataIndex: 'ten_mon',
+      key: 'ten_mon',
+      width: '15%',
     },
     {
       title: 'Chi tiết cấu trúc',

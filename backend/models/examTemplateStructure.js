@@ -2,7 +2,7 @@ const db = require('../configs/database');
 
 class ExamTemplateStructure {
   static async create(data) {
-    const { ten_cau_truc, loai_cau_truc, chi_tiet } = data;
+    const { ten_cau_truc, loai_cau_truc, chi_tiet, mon_hoc_id } = data;
 
     // Validate based on type
     if (loai_cau_truc === 'phan_tram') {
@@ -18,8 +18,8 @@ class ExamTemplateStructure {
 
       // Tạo cấu trúc đề thi mẫu
       const [result] = await connection.query(
-        'INSERT INTO CauTrucDeThiMau (ten_cau_truc, loai_cau_truc) VALUES (?, ?)',
-        [ten_cau_truc, loai_cau_truc]
+        'INSERT INTO CauTrucDeThiMau (ten_cau_truc, loai_cau_truc, mon_hoc_id) VALUES (?, ?, ?)',
+        [ten_cau_truc, loai_cau_truc, mon_hoc_id]
       );
       const cau_truc_id = result.insertId;
 
@@ -50,7 +50,10 @@ class ExamTemplateStructure {
 
   static async getAll() {
     const [structures] = await db.query(`
-      SELECT * FROM CauTrucDeThiMau ORDER BY id DESC
+      SELECT CauTrucDeThiMau.*, MonHoc.ten_mon
+      FROM CauTrucDeThiMau
+      JOIN MonHoc ON CauTrucDeThiMau.mon_hoc_id = MonHoc.id
+      ORDER BY id DESC
     `);
 
     // Lấy chi tiết cho mỗi cấu trúc
@@ -69,7 +72,10 @@ class ExamTemplateStructure {
 
   static async getById(id) {
     const [structures] = await db.query(`
-      SELECT * FROM CauTrucDeThiMau WHERE id = ?
+      SELECT CauTrucDeThiMau.*, MonHoc.ten_mon
+      FROM CauTrucDeThiMau
+      JOIN MonHoc ON CauTrucDeThiMau.mon_hoc_id = MonHoc.id
+      WHERE CauTrucDeThiMau.id = ?
     `, [id]);
 
     if (structures.length === 0) {

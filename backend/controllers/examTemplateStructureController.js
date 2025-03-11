@@ -22,7 +22,7 @@ exports.getAllTemplates = async (req, res) => {
 // Tạo cấu trúc đề thi mẫu mới
 exports.createTemplate = async (req, res) => {
   try {
-    const { ten_cau_truc, loai_cau_truc, chi_tiet } = req.body;
+    const { ten_cau_truc, loai_cau_truc, chi_tiet, mon_hoc_id } = req.body;
 
     // Validate required fields
     if (!ten_cau_truc || !loai_cau_truc || !chi_tiet || !Array.isArray(chi_tiet) || chi_tiet.length === 0) {
@@ -90,7 +90,8 @@ exports.createTemplate = async (req, res) => {
     const newTemplate = await ExamTemplateStructure.create({
       ten_cau_truc,
       loai_cau_truc,
-      chi_tiet
+      chi_tiet,
+      mon_hoc_id
     });
 
     res.status(201).json({
@@ -118,7 +119,7 @@ exports.createTemplate = async (req, res) => {
 exports.updateTemplate = async (req, res) => {
   try {
     const { id } = req.params;
-    const { ten_cau_truc, chi_tiet } = req.body;
+    const { ten_cau_truc, chi_tiet, mon_hoc_id } = req.body;
 
     // Validate required fields
     if (!ten_cau_truc || !chi_tiet || !Array.isArray(chi_tiet) || chi_tiet.length === 0) {
@@ -165,7 +166,8 @@ exports.updateTemplate = async (req, res) => {
 
     const updatedTemplate = await ExamTemplateStructure.update(id, {
       ten_cau_truc,
-      chi_tiet
+      chi_tiet,
+      mon_hoc_id
     });
 
     res.status(200).json({

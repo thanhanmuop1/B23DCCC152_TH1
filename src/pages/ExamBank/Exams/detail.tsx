@@ -5,6 +5,7 @@ import { ArrowLeftOutlined, PrinterOutlined, ReloadOutlined } from '@ant-design/
 import { useParams, history } from 'umi';
 import useExam from '@/hooks/ExamBank/useExam';
 import type { ExamQuestion } from '@/models/exam';
+import { groupQuestionsByDifficulty } from '@/models/exam';
 
 const ExamDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,7 +27,6 @@ const ExamDetail: React.FC = () => {
     window.print();
   };
 
-  // Thêm hàm xử lý random câu hỏi
   const handleRandomize = () => {
     if (!id) {
       message.error('Không tìm thấy ID đề thi');
@@ -56,7 +56,6 @@ const ExamDetail: React.FC = () => {
           }, 500);
         } catch (error) {
           console.error('Error randomizing questions:', error);
-          message.error('Đã xảy ra lỗi khi random vị trí câu hỏi');
         }
       },
     });
@@ -119,15 +118,10 @@ const ExamDetail: React.FC = () => {
     },
   ];
 
-  // Nhóm câu hỏi theo mức độ
-  const questionsByDifficulty = currentExam?.cau_hoi?.reduce((acc, question) => {
-    const { muc_do } = question;
-    if (!acc[muc_do]) {
-      acc[muc_do] = [];
-    }
-    acc[muc_do].push(question);
-    return acc;
-  }, {} as Record<string, ExamQuestion[]>) || {};
+  // Sử dụng hàm từ model để nhóm câu hỏi theo mức độ
+  const questionsByDifficulty = currentExam?.cau_hoi 
+    ? groupQuestionsByDifficulty(currentExam.cau_hoi) 
+    : {};
 
   return (
     <PageContainer

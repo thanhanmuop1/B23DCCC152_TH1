@@ -6,7 +6,7 @@ import {
   updateExamTemplate,
   deleteExamTemplate,
 } from '@/services/ExamBank/Template/examTemplate';
-import type { ExamTemplate, ExamTemplateRequest } from '@/models/examTemplate';
+import type { ExamTemplate, ExamTemplateRequest } from '@/models/ExamBank/examTemplate';
 
 export default function useExamTemplate() {
   const [loading, setLoading] = useState(false);

@@ -39,12 +39,14 @@ INSERT INTO CauHoi (noi_dung, muc_do, mon_hoc_id, danh_muc_id) VALUES
 CREATE TABLE CauTrucDeThiMau (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ten_cau_truc VARCHAR(255) NOT NULL UNIQUE,
-    loai_cau_truc ENUM('so_luong', 'phan_tram') NOT NULL DEFAULT 'so_luong'
+    mon_hoc_id INT NOT NULL,
+    loai_cau_truc ENUM('so_luong', 'phan_tram') NOT NULL DEFAULT 'so_luong',
+    FOREIGN KEY (mon_hoc_id) REFERENCES MonHoc(id) ON DELETE CASCADE
 );
 
-INSERT INTO CauTrucDeThiMau (ten_cau_truc, loai_cau_truc) VALUES
-('Cấu trúc đề thi theo số lượng', 'so_luong'),
-('Cấu trúc đề thi theo phần trăm', 'phan_tram');
+INSERT INTO CauTrucDeThiMau (ten_cau_truc, loai_cau_truc, mon_hoc_id) VALUES
+('Cấu trúc đề thi theo số lượng', 'so_luong', 1),
+('Cấu trúc đề thi theo phần trăm', 'phan_tram', 1);
 
 -- Bảng chi tiết cấu trúc đề thi mẫu (hỗ trợ cả số lượng và phần trăm)
 CREATE TABLE CauTrucDeThiMau_ChiTiet (
