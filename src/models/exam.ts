@@ -1,3 +1,6 @@
+import { ExamTemplate } from './ExamBank/examTemplate';
+import { processExamFormData } from './ExamBank/examFormHandler';
+
 export interface ExamStructureItem {
   muc_do: 'Dễ' | 'Trung bình' | 'Khó' | 'Rất khó';
   danh_muc_id: number;
@@ -99,35 +102,27 @@ export const convertTemplateToStructure = (
 
 // Hàm tiện ích để tạo request tạo đề thi
 export const createExamRequestFromForm = (
-  formValues: any, 
-  isFromTemplate: boolean, 
-  templates: any[]
+  values: any,
+  isFromTemplate: boolean,
+  templates: ExamTemplate[]
 ): CreateExamRequest => {
-  if (isFromTemplate) {
-    const selectedTemplate = templates.find(t => t.id === formValues.template_id);
-    if (!selectedTemplate) {
-      throw new Error('Template không tồn tại');
-    }
-    
-    return {
-      mon_hoc_id: formValues.mon_hoc_id,
-      ten_de: formValues.ten_de,
-      cau_truc: convertTemplateToStructure(
-        selectedTemplate.chi_tiet,
-        formValues.mon_hoc_id,
-        formValues.danh_muc_id,
-        formValues.total_questions
-      )
-    };
-  } else {
-    return {
-      mon_hoc_id: formValues.mon_hoc_id,
-      ten_de: formValues.ten_de,
-      cau_truc: formValues.chi_tiet.map((detail: any) => ({
-        muc_do: detail.muc_do,
-        so_luong: detail.so_luong,
-        danh_muc_id: formValues.danh_muc_id
-      }))
-    };
+  const formattedData = processExamFormData(values, isFromTemplate, templates);
+  
+  // Chuyển đổi sang định dạng API
+  const result: CreateExamRequest = {
+    mon_hoc_id: Number(formattedData.mon_hoc_id),
+    ten_de: formattedData.ten_de,
+    cau_truc: []
+  };
+  
+  // Nếu có cấu trúc, sử dụng nó
+  if (formattedData.cau_truc && formattedData.cau_truc.length > 0) {
+    result.cau_truc = formattedData.cau_truc.map(item => ({
+      muc_do: item.muc_do,
+      so_luong: item.so_luong,
+      danh_muc_id: item.danh_muc_id || 1
+    }));
   }
+  
+  return result;
 };

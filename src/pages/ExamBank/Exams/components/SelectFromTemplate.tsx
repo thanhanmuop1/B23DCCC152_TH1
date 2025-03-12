@@ -4,15 +4,34 @@ import { useSubjects } from '@/hooks/ExamBank/useSubjects';
 import useExamTemplate from '@/hooks/ExamBank/useExamTemplate';
 import { ExamTemplate } from '@/models/ExamBank/examTemplate';
 
-const SelectFromTemplate: React.FC<{ form: FormInstance }> = ({ form }) => {
+interface SelectFromTemplateProps {
+  form: FormInstance;
+  onTemplateSelected?: (template: ExamTemplate) => void;
+}
+
+const SelectFromTemplate: React.FC<SelectFromTemplateProps> = ({ 
+  form, 
+  onTemplateSelected 
+}) => {
   const { subjects, fetchSubjects } = useSubjects();
   const { templates, fetchTemplates } = useExamTemplate();
   const selectedMonHoc = Form.useWatch('mon_hoc_id', form);
+  const selectedTemplateId = Form.useWatch('template_id', form);
 
   useEffect(() => {
     fetchTemplates();
     fetchSubjects();
   }, []);
+
+  // Khi template được chọn, gọi callback để thông báo
+  useEffect(() => {
+    if (selectedTemplateId && onTemplateSelected) {
+      const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+      if (selectedTemplate) {
+        onTemplateSelected(selectedTemplate);
+      }
+    }
+  }, [selectedTemplateId, templates, onTemplateSelected]);
 
   const renderTemplateDetails = (template: ExamTemplate) => (
     <Space direction="vertical" size="small">
@@ -22,9 +41,9 @@ const SelectFromTemplate: React.FC<{ form: FormInstance }> = ({ form }) => {
         </Tag>
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {template.chi_tiet.map(detail => (
+        {template.chi_tiet.map((detail, index) => (
           <Tag
-            key={detail.muc_do}
+            key={`${detail.muc_do}-${index}`}
             color={
               detail.muc_do === 'Dễ' ? 'green' :
               detail.muc_do === 'Trung bình' ? 'blue' :

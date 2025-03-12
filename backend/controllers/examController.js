@@ -12,11 +12,11 @@ exports.createExamWithStructure = async (req, res) => {
         message: 'Vui lòng cung cấp đầy đủ thông tin đề thi và cấu trúc'
       });
     }
-
+    
     // Validate cấu trúc
     for (const item of cau_truc) {
-      const { muc_do, danh_muc_id, so_luong } = item;
-      if (!muc_do || !danh_muc_id || !so_luong) {
+      const { muc_do, so_luong } = item;
+      if (!muc_do || !so_luong) {
         return res.status(400).json({
           success: false,
           message: 'Cấu trúc đề thi không hợp lệ'
@@ -38,9 +38,10 @@ exports.createExamWithStructure = async (req, res) => {
         });
       }
     }
-
+    
     // Kiểm tra tính khả thi của cấu trúc
     try {
+      console.log(mon_hoc_id, cau_truc);
       await Exam.validateStructure(mon_hoc_id, cau_truc);
     } catch (error) {
       return res.status(400).json({
@@ -48,7 +49,7 @@ exports.createExamWithStructure = async (req, res) => {
         message: error.message
       });
     }
-
+    
     // Tạo đề thi
     const exam = await Exam.createWithStructure({
       mon_hoc_id,

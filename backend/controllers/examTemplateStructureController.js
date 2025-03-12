@@ -119,10 +119,9 @@ exports.createTemplate = async (req, res) => {
 exports.updateTemplate = async (req, res) => {
   try {
     const { id } = req.params;
-    const { ten_cau_truc, chi_tiet, mon_hoc_id } = req.body;
-
+    const { ten_cau_truc, loai_cau_truc, chi_tiet, mon_hoc_id } = req.body;
     // Validate required fields
-    if (!ten_cau_truc || !chi_tiet || !Array.isArray(chi_tiet) || chi_tiet.length === 0) {
+    if (!ten_cau_truc || !loai_cau_truc || !chi_tiet || !Array.isArray(chi_tiet) || chi_tiet.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'Vui lòng cung cấp tên cấu trúc và chi tiết cấu trúc'
@@ -138,34 +137,25 @@ exports.updateTemplate = async (req, res) => {
           message: 'Mức độ không hợp lệ'
         });
       }
+      if (loai_cau_truc === 'phan_tram') {
       if (!detail.phan_tram || detail.phan_tram <= 0 || detail.phan_tram > 100) {
         return res.status(400).json({
           success: false,
           message: 'Phần trăm phải lớn hơn 0 và nhỏ hơn hoặc bằng 100'
-        });
+        })
+      }} else {
+        if (!detail.so_luong || detail.so_luong <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: 'Số lượng câu hỏi phải lớn hơn 0'
+          });
+        }
       }
-    }
-
-    // Kiểm tra tổng phần trăm
-    const totalPercentage = chi_tiet.reduce((sum, item) => sum + item.phan_tram, 0);
-    if (totalPercentage !== 100) {
-      return res.status(400).json({
-        success: false,
-        message: `Tổng phần trăm phải bằng 100%, hiện tại là ${totalPercentage}%`
-      });
-    }
-
-    // Kiểm tra trùng lặp mức độ
-    const difficulties = chi_tiet.map(item => item.muc_do);
-    if (new Set(difficulties).size !== difficulties.length) {
-      return res.status(400).json({
-        success: false,
-        message: 'Không được trùng lặp mức độ trong cấu trúc đề thi'
-      });
     }
 
     const updatedTemplate = await ExamTemplateStructure.update(id, {
       ten_cau_truc,
+      loai_cau_truc,
       chi_tiet,
       mon_hoc_id
     });

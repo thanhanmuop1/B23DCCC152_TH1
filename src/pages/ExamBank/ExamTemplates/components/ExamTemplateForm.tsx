@@ -25,6 +25,12 @@ const ExamTemplateForm: React.FC<ExamTemplateFormProps> = ({
 
   useEffect(() => {
     if (visible) {
+      fetchSubjects();
+    }
+  }, [fetchSubjects, visible]);
+
+  useEffect(() => {
+    if (visible) {
       if (initialValues) {
         form.setFieldsValue({
           ten_cau_truc: initialValues.ten_cau_truc,
@@ -44,7 +50,7 @@ const ExamTemplateForm: React.FC<ExamTemplateFormProps> = ({
         });
       }
     }
-  }, [visible, initialValues, form, fetchSubjects]);
+  }, [visible, initialValues, form ]);
 
   const handleStructureTypeChange = (type: StructureType) => {
     // Reset chi tiết khi đổi loại
@@ -151,7 +157,7 @@ const ExamTemplateForm: React.FC<ExamTemplateFormProps> = ({
                   >
                     <Select placeholder="Chọn mức độ">
                       {difficultyLevels.map(level => (
-                        <Select.Option key={level} value={level}>
+                        <Select.Option key={level } value={level}>
                           {level}
                         </Select.Option>
                       ))}

@@ -17,20 +17,20 @@ class Exam {
 
       // 2. Lấy câu hỏi theo từng mức độ và danh mục
       for (const item of cau_truc) {
-        const { muc_do, danh_muc_id, so_luong } = item;
+        const { muc_do, so_luong } = item;
 
         // Lấy câu hỏi ngẫu nhiên theo mức độ và danh mục
         const [questions] = await connection.query(
           `SELECT id FROM CauHoi 
-           WHERE mon_hoc_id = ? AND muc_do = ? AND danh_muc_id = ?
+           WHERE mon_hoc_id = ? AND muc_do = ? 
            ORDER BY RAND() LIMIT ?`,
-          [mon_hoc_id, muc_do, danh_muc_id, so_luong]
+          [mon_hoc_id, muc_do, so_luong]
         );
 
         // Kiểm tra số lượng câu hỏi có đủ không
         if (questions.length < so_luong) {
           throw new Error(
-            `Không đủ câu hỏi cho mức độ "${muc_do}" và danh mục ID ${danh_muc_id}. ` +
+            `Không đủ câu hỏi cho mức độ "${muc_do}". ` +
             `Yêu cầu ${so_luong} câu, chỉ có ${questions.length} câu.`
           );
         }
@@ -72,12 +72,11 @@ class Exam {
 
     // Lấy danh sách câu hỏi của đề thi
     const [questions] = await db.query(
-      `SELECT c.*, dk.ten_danh_muc
+      `SELECT c.*
        FROM DeThi_CauHoi dc
        JOIN CauHoi c ON dc.cau_hoi_id = c.id
-       JOIN DanhMucKhoiKienThuc dk ON c.danh_muc_id = dk.id
        WHERE dc.de_thi_id = ?
-       ORDER BY c.muc_do, c.danh_muc_id`,
+       ORDER BY c.muc_do`,
       [id]
     );
 
@@ -110,19 +109,19 @@ class Exam {
     const connection = await db.getConnection();
     try {
       for (const item of cau_truc) {
-        const { muc_do, danh_muc_id, so_luong } = item;
+        const { muc_do, so_luong } = item;
 
         // Đếm số câu hỏi có sẵn theo mức độ và danh mục
         const [result] = await connection.query(
           `SELECT COUNT(*) as count 
            FROM CauHoi 
-           WHERE mon_hoc_id = ? AND muc_do = ? AND danh_muc_id = ?`,
-          [mon_hoc_id, muc_do, danh_muc_id]
+           WHERE mon_hoc_id = ? AND muc_do = ?`,
+          [mon_hoc_id, muc_do]
         );
 
         if (result[0].count < so_luong) {
           throw new Error(
-            `Không đủ câu hỏi cho mức độ "${muc_do}" và danh mục ID ${danh_muc_id}. ` +
+            `Không đủ câu hỏi cho mức độ "${muc_do}". ` +
             `Yêu cầu ${so_luong} câu, hiện chỉ có ${result[0].count} câu.`
           );
         }
